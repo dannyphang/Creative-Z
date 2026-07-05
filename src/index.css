@@ -54,3 +54,56 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Animations from Link App */
+@keyframes grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+.animate-grid-drift {
+  animation: grid-drift 20s linear infinite;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617; /* Slate 950 matching background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.25); /* Subtle neon purple */
+  border-radius: 9999px;
+  border: 2px solid #020617; /* Creates margin effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5); /* Brighter purple on hover */
+}
+
+/* Firefox custom scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.25) #020617;
+}
+
+/* Custom glassmorphism cards */
+.glass-card {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.1);
+}
+

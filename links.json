@@ -1,0 +1,25 @@
+{
+  "b4ty0u": {
+    "code": "b4ty0u",
+    "longUrl": "https://www.youtube.com/watch?v=uAFrayG9Tls",
+    "createdAt": "2026-07-05T15:24:34.769Z",
+    "isPasswordProtected": false,
+    "clicksCount": 1,
+    "clicks": [
+      {
+        "timestamp": "2026-07-05T15:24:45.091Z",
+        "referrer": "Direct",
+        "browser": "Chrome",
+        "device": "Desktop"
+      }
+    ]
+  },
+  "qwijdZ": {
+    "code": "qwijdZ",
+    "longUrl": "http://www.googlee.com",
+    "createdAt": "2026-07-05T15:55:24.154Z",
+    "isPasswordProtected": false,
+    "clicksCount": 0,
+    "clicks": []
+  }
+}
