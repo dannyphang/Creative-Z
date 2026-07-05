@@ -352,18 +352,28 @@ export default function App() {
             </div>
           </div>
 
-          {/* Sci-Fi Meta Tags (Architecturally Honest) */}
-          <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] text-slate-500 uppercase tracking-wider">
-            <div>
-              <span className="text-purple-500/80">LOC:</span> GLOBAL CLOUD
+          <div className="flex items-center gap-6">
+            {/* Sci-Fi Meta Tags (Architecturally Honest) */}
+            <div className="hidden md:flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] text-slate-500 uppercase tracking-wider">
+              <div>
+                <span className="text-purple-500/80">LOC:</span> GLOBAL CLOUD
+              </div>
+              <div>
+                <span className="text-purple-500/80">ENCRYPTION:</span> LOCAL_SECURE
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-emerald-400 font-semibold">TERMINAL ONLINE</span>
+              </div>
             </div>
-            <div>
-              <span className="text-purple-500/80">ENCRYPTION:</span> LOCAL_SECURE
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-emerald-400 font-semibold">TERMINAL ONLINE</span>
-            </div>
+
+            <button
+              onClick={() => navigate('/link-settings')}
+              className="p-2.5 bg-slate-900 border border-purple-500/20 hover:border-purple-500/50 rounded-xl text-slate-400 hover:text-white transition cursor-pointer shadow-lg shadow-purple-500/10"
+              title="System Settings"
+            >
+              <Shield size={18} />
+            </button>
           </div>
         </header>
 
