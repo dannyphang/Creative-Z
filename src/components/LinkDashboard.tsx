@@ -26,7 +26,8 @@ import {
   Download,
   AlertTriangle,
   Search,
-  X
+  X,
+  Shield
 } from "lucide-react";
 
 export default function App() {
