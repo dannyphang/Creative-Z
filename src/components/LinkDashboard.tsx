@@ -152,12 +152,14 @@ export default function App() {
     const lines = text.split(/\r?\n/);
     const parsed: Array<{ longUrl: string; customCode?: string; title?: string }> = [];
 
+    const isTsv = lines[0]?.includes('\t');
+    const separator = isTsv ? '\t' : ',';
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
-      // Split line by comma, respect simple CSV syntax
-      const parts = trimmed.split(",");
+      const parts = trimmed.split(separator);
       if (parts.length > 0) {
         const url = parts[0].trim();
         if (url) {
@@ -241,18 +243,36 @@ export default function App() {
   };
 
   const handleCsvFile = (file: File) => {
-    if (!file.name.endsWith(".csv") && !file.name.endsWith(".txt")) {
-      setBulkError("File must be a .csv or .txt file.");
+    if (!file.name.endsWith(".csv") && !file.name.endsWith(".txt") && !file.name.endsWith(".xlsx")) {
+      setBulkError("File must be a .csv, .txt, or .xlsx file.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      setBulkInput(text);
-      setBulkSuccess(`Successfully parsed file contents: ${file.name}`);
-    };
-    reader.readAsText(file);
+    if (file.name.endsWith(".xlsx")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const text = XLSX.utils.sheet_to_csv(worksheet, { FS: "\t" });
+          setBulkInput(text);
+          setBulkSuccess(`Successfully parsed file contents: ${file.name}`);
+        } catch (err) {
+          setBulkError("Failed to parse XLSX file.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setBulkInput(text);
+        setBulkSuccess(`Successfully parsed file contents: ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
   };
 
   const downloadBulkResultsCsv = () => {
@@ -633,10 +653,10 @@ export default function App() {
                       <Database size={13} /> High-Speed Batch Pipeline
                     </p>
                     <p>
-                      Generate hundreds of shortened links simultaneously. Drag and drop a CSV file, or copy and paste raw link mappings directly below.
+                      Generate hundreds of shortened links simultaneously. Drag and drop an Excel (.xlsx) or CSV file, or copy and paste rows from Google Sheets directly below.
                     </p>
                     <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
-                      CSV Line Format: <span className="text-purple-400">destinationUrl, customSlug, labelNotes</span>
+                      Format: <span className="text-purple-400">destinationUrl, customSlug, labelNotes</span> (Comma or Tab separated)
                     </p>
                   </div>
 
@@ -669,7 +689,7 @@ export default function App() {
                     <input
                       type="file"
                       id="bulk-file-upload"
-                      accept=".csv,.txt"
+                      accept=".csv,.txt,.xlsx"
                       onChange={handleFileInputChange}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
@@ -678,7 +698,7 @@ export default function App() {
                       Drag & Drop Batch File Here
                     </p>
                     <p className="text-[10px] text-slate-500 font-mono mt-1">
-                      Supports .csv or .txt raw link documents
+                      Supports .csv, .txt, or .xlsx raw link documents
                     </p>
                   </div>
 
