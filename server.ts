@@ -6,6 +6,8 @@ import { ShortenedLink, ClickRecord } from "./src/types";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -93,11 +95,94 @@ try {
 }
 }
 
+
+const JWT_SECRET = process.env.JWT_SECRET || "creative-z-super-secret-key-fallback";
+
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ success: false, error: "Unauthorized" });
+    return;
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    jwt.verify(token, JWT_SECRET);
+    next();
+  } catch (err) {
+    res.status(401).json({ success: false, error: "Invalid or expired token" });
+  }
+};
+
 const app = express();
 app.use(express.json());
 
+
+// API: Admin Login
+app.post("/api/auth/login", async (req, res) => {
+  const { password } = req.body;
+  if (!password) {
+    res.status(400).json({ success: false, error: "Password is required" });
+    return;
+  }
+  
+  const adminRef = db.collection("admin").doc("settings");
+  const doc = await adminRef.get();
+  let isValid = false;
+
+  if (!doc.exists) {
+    if (password === "password") {
+      isValid = true;
+    }
+  } else {
+    const data = doc.data();
+    if (data && data.hashedPassword) {
+      isValid = bcrypt.compareSync(password, data.hashedPassword);
+    }
+  }
+
+  if (isValid) {
+    // Generate token valid for 5 hours
+    const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "5h" });
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ success: false, error: "Invalid password" });
+  }
+});
+
+// API: Change Password
+app.post("/api/auth/change-password", requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ success: false, error: "Missing fields" });
+    return;
+  }
+
+  const adminRef = db.collection("admin").doc("settings");
+  const doc = await adminRef.get();
+  
+  let isValid = false;
+  if (!doc.exists) {
+    if (currentPassword === "password") isValid = true;
+  } else {
+    const data = doc.data();
+    if (data && data.hashedPassword) {
+      isValid = bcrypt.compareSync(currentPassword, data.hashedPassword);
+    }
+  }
+
+  if (!isValid) {
+    res.status(401).json({ success: false, error: "Invalid current password" });
+    return;
+  }
+
+  const newHash = bcrypt.hashSync(newPassword, 10);
+  await adminRef.set({ hashedPassword: newHash }, { merge: true });
+
+  res.json({ success: true, message: "Password updated successfully" });
+});
+
 // API: Get all active links (summarized, no password values)
-app.get("/api/links", async (req, res) => {
+app.get("/api/links", requireAuth, async (req, res) => {
   try {
     const snapshot = await db.collection("links").get();
     const list = snapshot.docs.map(doc => {
@@ -116,7 +201,7 @@ app.get("/api/links", async (req, res) => {
 });
 
 // API: Get individual link stats
-app.get("/api/links/:code/stats", async (req, res) => {
+app.get("/api/links/:code/stats", requireAuth, async (req, res) => {
   try {
     const { code } = req.params;
     const doc = await db.collection("links").doc(code).get();
@@ -140,7 +225,7 @@ app.get("/api/links/:code/stats", async (req, res) => {
 });
 
 // API: Create short link
-app.post("/api/shorten", async (req, res) => {
+app.post("/api/shorten", requireAuth, async (req, res) => {
   const { longUrl, customCode, expiresAt, password, title } = req.body;
 
   if (!longUrl) {
@@ -218,7 +303,7 @@ app.post("/api/shorten", async (req, res) => {
 });
 
 // API: Update existing link
-app.put("/api/links/:code", async (req, res) => {
+app.put("/api/links/:code", requireAuth, async (req, res) => {
   const { code } = req.params;
   const { longUrl, expiresAt, password, title, qrCustomization } = req.body;
 
@@ -373,7 +458,7 @@ app.post("/api/bulk", async (req, res) => {
 });
 
 // API: Delete link
-app.delete("/api/links/:code", async (req, res) => {
+app.delete("/api/links/:code", requireAuth, async (req, res) => {
   const { code } = req.params;
   const docRef = db.collection("links").doc(code);
   const doc = await docRef.get();

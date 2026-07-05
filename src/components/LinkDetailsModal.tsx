@@ -73,7 +73,7 @@ export default function LinkDetailsModal({ link, onClose, onDelete, onUpdate }: 
   useEffect(() => {
     if (!link) return;
     setLoading(true);
-    fetch(`/api/links/${link.code}/stats`)
+    fetch(`/api/links/${link.code}/stats`, { headers: { "Authorization": `Bearer ${localStorage.getItem("admin_token")}` } })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -120,7 +120,7 @@ export default function LinkDetailsModal({ link, onClose, onDelete, onUpdate }: 
     try {
       const response = await fetch(`/api/links/${link.code}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_token")}` },
         body: JSON.stringify({
           qrCustomization: {
             bgColor: qrBgColor,
@@ -163,7 +163,7 @@ export default function LinkDetailsModal({ link, onClose, onDelete, onUpdate }: 
     try {
       const response = await fetch(`/api/links/${link.code}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_token")}` },
         body: JSON.stringify({
           longUrl: editLongUrl,
           title: editTitle,

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from "react";
 import { ShortenedLink } from "../types";
 import ParticleNetwork from "./ParticleNetwork";
@@ -49,6 +50,7 @@ export default function App() {
   const [bulkSuccess, setBulkSuccess] = useState("");
   const [dragActive, setDragActive] = useState(false);
   
+  const navigate = useNavigate();
   const [links, setLinks] = useState<ShortenedLink[]>([]);
   const [selectedLink, setSelectedLink] = useState<ShortenedLink | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +66,7 @@ export default function App() {
   }, []);
 
   const fetchActiveLinks = () => {
-    fetch("/api/links")
+    fetch("/api/links", { headers: { "Authorization": `Bearer ${localStorage.getItem("admin_token")}` } })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -95,7 +97,7 @@ export default function App() {
     try {
       const response = await fetch("/api/shorten", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_token")}` },
         body: JSON.stringify({
           longUrl,
           customCode: customCode || undefined,
@@ -195,7 +197,7 @@ export default function App() {
     try {
       const response = await fetch("/api/bulk", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_token")}` },
         body: JSON.stringify({ items: bulkParsedItems })
       });
 
