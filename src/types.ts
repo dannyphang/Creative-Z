@@ -18,12 +18,14 @@ export interface ShortenedLink {
   longUrl: string;
   createdAt: string;
   expiresAt?: string;
-  password?: string; // Optional access password
-  isPasswordProtected: boolean; // flag for client to know
+  password?: string; // Hashed password
+  isPasswordProtected?: boolean; // Convenience flag for frontend
   title?: string;
   qrCustomization?: QRCustomization;
   clicksCount: number;
-  clicks: ClickRecord[];
+  clicks?: ClickRecord[];
+  environment?: number; // 1 = production, 2 = local
+  statusId?: number; // 1 = active, 2 = deleted
 }
 
 export interface ShortenRequest {

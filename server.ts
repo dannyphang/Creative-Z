@@ -31,6 +31,7 @@ db.settings({ ignoreUndefinedProperties: true });
 
 
 const PORT = 3000;
+const ENV_ID = process.env.VERCEL ? 1 : 2;
 // Helper to generate unique short code
 function generateShortCode(): string {
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -185,8 +186,10 @@ app.post("/api/auth/change-password", requireAuth, async (req, res) => {
 app.get("/api/links", requireAuth, async (req, res) => {
   try {
     const snapshot = await db.collection("links").get();
-    const list = snapshot.docs.map(doc => {
-      const data = doc.data() as ShortenedLink;
+    const list = snapshot.docs
+      .map(doc => doc.data() as ShortenedLink)
+      .filter(data => (data.environment === undefined || data.environment === ENV_ID) && (data.statusId === undefined || data.statusId === 1))
+      .map(data => {
       const { password, ...summary } = data;
       return {
         ...summary,
@@ -211,6 +214,10 @@ app.get("/api/links/:code/stats", requireAuth, async (req, res) => {
       return;
     }
     const link = doc.data() as ShortenedLink;
+    if (link.statusId === 2) {
+      res.status(404).json({ success: false, error: "Link not found" });
+      return;
+    }
     const { password, ...safeLink } = link;
     res.json({
       success: true,
@@ -283,7 +290,9 @@ app.post("/api/shorten", requireAuth, async (req, res) => {
     isPasswordProtected: !!password,
     title: title ? title.trim() : undefined,
     clicksCount: 0,
-    clicks: []
+    clicks: [],
+    environment: ENV_ID,
+    statusId: 1
   };
 
   await db.collection("links").doc(code).set(newLink);
@@ -468,7 +477,7 @@ app.delete("/api/links/:code", requireAuth, async (req, res) => {
     return;
   }
   
-  await docRef.delete();
+  await docRef.update({ statusId: 2 });
   res.json({ success: true, message: "Link deleted successfully" });
 });
 
@@ -478,13 +487,17 @@ app.post("/api/links/:code/unlock", async (req, res) => {
   const { password } = req.body;
   const docRef = db.collection("links").doc(code);
   const doc = await docRef.get();
-
+  
   if (!doc.exists) {
     res.status(404).json({ success: false, error: "Link not found" });
     return;
   }
 
   const link = doc.data() as ShortenedLink;
+  if (link.statusId === 2) {
+    res.status(404).json({ success: false, error: "Link not found" });
+    return;
+  }
 
   if (link.password && link.password !== password) {
     res.status(401).json({ success: false, error: "Incorrect password" });
@@ -526,6 +539,10 @@ app.get("/link/:code", async (req, res, next) => {
   }
 
   const link = doc.data() as ShortenedLink;
+
+  if (link.statusId === 2) {
+    return next();
+  }
 
   if (link.expiresAt && new Date() > new Date(link.expiresAt)) {
     res.status(410).send(`

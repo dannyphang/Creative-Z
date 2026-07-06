@@ -949,7 +949,7 @@ export default function LinkDetailsModal({ link, onClose, onDelete, onUpdate }: 
             <button
               id="delete-link-btn"
               onClick={() => {
-                if (confirm("Are you sure you want to permanently delete this shortened link and all its metrics?")) {
+                if (confirm("Are you sure you want to delete this shortened link? It will be removed from your dashboard.")) {
                   onDelete(link.code);
                   onClose();
                 }
