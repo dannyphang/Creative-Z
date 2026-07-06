@@ -1,6 +1,7 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/_vercel/(.*)", "destination": "/_vercel/$1" },
     { "source": "/api/(.*)", "destination": "/api/index.ts" },
     { "source": "/link/(.*)", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
