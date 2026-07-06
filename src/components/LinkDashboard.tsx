@@ -959,11 +959,6 @@ export default function App() {
           <div>
             CREATIVE Z LINK &copy; ALL RIGHTS RESERVED
           </div>
-          <div className="flex gap-4">
-            <a href="https://github.com/dannyphang/Creative-Z" target="_blank" rel="noreferrer" className="hover:text-purple-400 transition flex items-center gap-1">
-              Creative-Z <ExternalLink size={12} />
-            </a>
-          </div>
         </footer>
 
       </div>
