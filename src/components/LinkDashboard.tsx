@@ -136,7 +136,8 @@ export default function App() {
   const handleDelete = async (code: string) => {
     try {
       const response = await fetch(`/api/links/${code}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("admin_token")}` }
       });
       const data = await response.json();
       if (data.success) {
